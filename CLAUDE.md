@@ -42,8 +42,10 @@ House folder layout: `app/_components/<domain>/`, `app/_lib/`,
 - Quantities are base units (tablets). `formatUnits()` and SQL `fmt_units()`
   must say the same thing ("3 packs + 4 loose").
 - Ledgers are append-only. Corrections are new rows.
-- Migrations are numbered and never edited once applied to the live
-  database. Until the first apply, 0001 to 0004 may still change.
+- Migrations are numbered and never edited once applied. 0001 to 0005 are
+  live on Supabase project `yerobtkhzlhsxdvwvkce` ("Pharmacy-POS", Sydney
+  ap-southeast-2, applied 30 Sep 2026). Match the project by this ref, never
+  by name. Vercel functions are pinned to `syd1` beside it.
 - Run `npm run test:db` (needs a local Postgres 16, see
   `supabase/tests/run.sh`) after any SQL change. It never touches Supabase.
 - No em or en dashes anywhere, including SQL messages and seed data.

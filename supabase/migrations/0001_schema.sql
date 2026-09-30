@@ -4,7 +4,7 @@
 -- Ledgers are append-only: nothing in them is edited or deleted, a mistake is
 -- corrected by a new row.
 
-create extension if not exists pg_trgm;
+create extension if not exists pg_trgm with schema extensions;
 
 create type public.app_role as enum ('admin', 'staff');
 
@@ -55,8 +55,8 @@ create table public.medicines (
 );
 create unique index medicines_identity
   on public.medicines (lower(name), lower(strength), lower(form));
-create index medicines_name_trgm on public.medicines using gin (name gin_trgm_ops);
-create index medicines_generic_trgm on public.medicines using gin (generic_name gin_trgm_ops);
+create index medicines_name_trgm on public.medicines using gin (name extensions.gin_trgm_ops);
+create index medicines_generic_trgm on public.medicines using gin (generic_name extensions.gin_trgm_ops);
 
 create table public.suppliers (
   id bigint generated always as identity primary key,
@@ -79,7 +79,7 @@ create table public.customers (
   active boolean not null default true,
   created_at timestamptz not null default now()
 );
-create index customers_name_trgm on public.customers using gin (name gin_trgm_ops);
+create index customers_name_trgm on public.customers using gin (name extensions.gin_trgm_ops);
 
 -- Stock ----------------------------------------------------------------------
 

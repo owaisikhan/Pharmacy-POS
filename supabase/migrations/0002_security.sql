@@ -36,23 +36,23 @@ end $$;
 
 -- The business day is Pakistan time, whatever the server's clock says.
 create or replace function public.today_pk()
-returns date language sql stable as $$
+returns date language sql stable set search_path = public as $$
   select (now() at time zone 'Asia/Karachi')::date;
 $$;
 
 create or replace function public.fmt_rs(n numeric)
-returns text language sql immutable as $$
+returns text language sql immutable set search_path = public as $$
   select 'Rs ' || to_char(coalesce(n, 0), 'FM999,999,999,990.00');
 $$;
 
 create or replace function public.fmt_date(d date)
-returns text language sql immutable as $$
+returns text language sql immutable set search_path = public as $$
   select to_char(d, 'DD Mon YYYY');
 $$;
 
 -- "3 packs + 4" for a strip of 10, "7" for a bottle.
 create or replace function public.fmt_units(n int, per_pack int)
-returns text language sql immutable as $$
+returns text language sql immutable set search_path = public as $$
   select case
     when n = 0 then 'none'
     when per_pack <= 1 then n::text
@@ -166,6 +166,9 @@ create policy purchase_lines_read on public.purchase_lines for select to authent
 create policy supplier_ledger_read on public.supplier_ledger for select to authenticated using (public.is_admin());
 create policy audit_log_read on public.audit_log for select to authenticated using (public.is_admin());
 
--- The anon key can read nothing.
+-- Signed-in accounts reach tables through the Data API; the policies above
+-- decide which rows and which writes. The anon key can read nothing.
+grant usage on schema public to authenticated;
+grant select, insert, update on all tables in schema public to authenticated;
 revoke all on all tables in schema public from anon;
 revoke all on all sequences in schema public from anon;

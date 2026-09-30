@@ -29,9 +29,9 @@ and Supabase, deployed on Vercel.
 
 ## Setting up
 
-1. **Create a Supabase project** in the Mumbai region (`ap-south-1`).
+1. **Create a Supabase project.** Mumbai (`ap-south-1`) is closest to Pakistan; the live project is in Sydney, so `vercel.json` pins `syd1`. Keep Vercel's region beside the database.
 2. **Apply the database.** In the Supabase SQL editor, run the files in
-   `supabase/migrations/` in order: `0001` to `0004`.
+   `supabase/migrations/` in order: `0001` to `0005`.
 3. **Auth settings.** Authentication > Providers > Email: keep email and
    password on. Turning "Confirm email" off lets staff sign in straight
    after signing up (the owner still has to switch them on).
@@ -43,8 +43,7 @@ and Supabase, deployed on Vercel.
    owner. Then in Settings enter the pharmacy's name, address, phone and
    licence number (printed on receipts).
 7. **Deploy.** Import the repo on Vercel, add the two environment variables,
-   deploy. `vercel.json` pins functions to Mumbai (`bom1`) beside the
-   database.
+   deploy. `vercel.json` pins functions to the database's region.
 
 ## First day at the pharmacy
 

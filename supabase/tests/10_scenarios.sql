@@ -80,7 +80,7 @@ select create_purchase(jsonb_build_object(
 select pg_temp.check((select qty_on_hand = 60 and cost_per_unit = 8.3333 from batches where batch_no = 'A1'), 'bonus packs lower the unit cost (500 / 60), batch number upper-cased');
 select pg_temp.check((select qty_on_hand = 20 and cost_per_unit = 9 from batches where batch_no = 'B2'), 'second batch in units');
 select pg_temp.check((select sale_price_per_pack = 150 from medicines where name = 'Panadol'), 'purchase sets the sale price');
-select pg_temp.check(supplier_balance((select id from suppliers limit 1)) = 2180, 'supplier balance is invoice 2680 less 500 paid');
+select pg_temp.check((select balance from supplier_balances limit 1) = 2180, 'supplier balance is invoice 2680 less 500 paid');
 
 select pg_temp.expect_error($$select create_purchase(jsonb_build_object(
   'supplier_id', (select id from suppliers limit 1),
@@ -132,12 +132,12 @@ select pg_temp.check((select count(*) from sales where invoice_no like 'PENDING%
 -- Credit (khata) ----------------------------------------------------------
 select create_sale(jsonb_build_object('customer_id', (select id from customers limit 1), 'credit_amount', 300,
   'items', jsonb_build_array(jsonb_build_object('medicine_id', (select id from medicines where name='Panadol'), 'qty', 2))));
-select pg_temp.check(customer_balance((select id from customers limit 1)) = 300, 'credit sale charges the account');
+select pg_temp.check((select balance from customer_balances limit 1) = 300, 'credit sale charges the account');
 select pg_temp.check((select string_agg(invoice_no, ',' order by id) from sales) = 'INV-000001,INV-000002', 'refused bills leave no gap in invoice numbers');
 select pg_temp.expect_error($$select create_sale(jsonb_build_object('customer_id', (select id from customers limit 1), 'credit_amount', 260,
   'items', jsonb_build_array(jsonb_build_object('medicine_id', (select id from medicines where name='Brufen Syrup'), 'qty', 1))))$$, '%pass their credit limit of Rs 500.00%');
 select receive_customer_payment((select id from customers limit 1), 100, 'cash', 'Part payment');
-select pg_temp.check(customer_balance((select id from customers limit 1)) = 200, 'payment reduces the balance');
+select pg_temp.check((select balance from customer_balances limit 1) = 200, 'payment reduces the balance');
 select pg_temp.expect_error($$insert into customer_ledger (customer_id, kind, payment) values (1, 'payment', 1000)$$, '%row-level security%');
 
 -- Returns -----------------------------------------------------------------
@@ -179,4 +179,11 @@ reset role;
 
 select pg_temp.act_as('owner@test.pk');
 select pg_temp.check((select count(*) from audit_log) >= 8, 'audit log records the actions');
+reset role;
+
+-- 0005: internal helpers are not callable from the API ----------------------
+select pg_temp.act_as('staff@test.pk');
+select pg_temp.expect_error($$select write_audit('fake', 'x', '1')$$, '%permission denied%');
+select pg_temp.expect_error($$select supplier_balance(1)$$, '%permission denied%');
+select pg_temp.check((select (report_summary(today_pk(), today_pk()) ->> 'bills')::int) = 2, 'functions that use the helpers still work for staff');
 reset role;
