@@ -108,7 +108,7 @@ create table public.stock_movements (
   ref_table text,
   ref_id bigint,
   note text not null default '',
-  created_by uuid,
+  created_by uuid references public.profiles (id),
   created_at timestamptz not null default now()
 );
 create index stock_movements_batch on public.stock_movements (batch_id, created_at);
@@ -118,10 +118,10 @@ create index stock_movements_medicine on public.stock_movements (medicine_id, cr
 
 create table public.shifts (
   id bigint generated always as identity primary key,
-  opened_by uuid not null,
+  opened_by uuid not null references public.profiles (id),
   opened_at timestamptz not null default now(),
   opening_float numeric(12,2) not null check (opening_float >= 0),
-  closed_by uuid,
+  closed_by uuid references public.profiles (id),
   closed_at timestamptz,
   expected_cash numeric(12,2),
   counted_cash numeric(12,2) check (counted_cash >= 0),
@@ -142,7 +142,7 @@ create table public.sales (
   invoice_no text not null unique,
   client_ref uuid unique,
   created_at timestamptz not null default now(),
-  cashier_id uuid not null,
+  cashier_id uuid not null references public.profiles (id),
   shift_id bigint not null references public.shifts (id),
   customer_id bigint references public.customers (id),
   subtotal numeric(12,2) not null default 0 check (subtotal >= 0),
@@ -201,7 +201,7 @@ create table public.returns (
   client_ref uuid unique,
   sale_id bigint not null references public.sales (id),
   created_at timestamptz not null default now(),
-  created_by uuid not null,
+  created_by uuid not null references public.profiles (id),
   shift_id bigint references public.shifts (id),
   refund_method text not null check (refund_method in ('cash', 'account')),
   refund_amount numeric(12,2) not null default 0 check (refund_amount >= 0),
@@ -234,7 +234,7 @@ create table public.customer_ledger (
   sale_id bigint references public.sales (id),
   return_id bigint references public.returns (id),
   note text not null default '',
-  created_by uuid,
+  created_by uuid references public.profiles (id),
   check ((charge > 0) <> (payment > 0)),
   check (method <> 'cash' or shift_id is not null)
 );
@@ -252,7 +252,7 @@ create table public.purchases (
   total numeric(12,2) not null default 0 check (total >= 0),
   paid_amount numeric(12,2) not null default 0 check (paid_amount >= 0),
   note text not null default '',
-  created_by uuid not null,
+  created_by uuid not null references public.profiles (id),
   created_at timestamptz not null default now(),
   check (discount <= subtotal),
   check (total = subtotal - discount),
@@ -286,7 +286,7 @@ create table public.supplier_ledger (
   method text check (method in ('cash', 'bank', 'cheque')),
   purchase_id bigint references public.purchases (id),
   note text not null default '',
-  created_by uuid,
+  created_by uuid references public.profiles (id),
   check ((bill > 0) <> (payment > 0))
 );
 create index supplier_ledger_supplier on public.supplier_ledger (supplier_id, created_at);

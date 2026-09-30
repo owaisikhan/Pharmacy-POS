@@ -116,9 +116,10 @@ alter table public.purchase_lines enable row level security;
 alter table public.supplier_ledger enable row level security;
 alter table public.audit_log enable row level security;
 
--- Profiles: you see yourself; the admin sees everyone. Changes go through set_staff().
+-- Profiles: you always see yourself; working staff see colleagues' names on
+-- bills and shifts. Changes go through set_staff().
 create policy profiles_read on public.profiles for select to authenticated
-  using (id = auth.uid() or public.is_admin());
+  using (id = auth.uid() or public.is_active_user());
 
 create policy settings_read on public.settings for select to authenticated
   using (public.is_active_user());

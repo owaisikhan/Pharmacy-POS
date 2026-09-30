@@ -1,0 +1,258 @@
+@import "tailwindcss";
+
+/* Tokens are named by role, so a rebrand is a token swap. Contrast measured
+   on --color-surface (#fff): text 16.4:1, muted 6.0:1, primary 7.1:1,
+   danger 6.5:1, warning-text 5.6:1, placeholder 3.9:1. */
+@theme {
+  --font-sans: var(--font-plex-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-plex-mono), ui-monospace, monospace;
+
+  --color-bg: #f3f4f1;
+  --color-surface: #ffffff;
+  --color-surface-2: #eceee9;
+  --color-text: #16201c;
+  --color-muted: #56615b;
+  --color-placeholder: #858e89;
+  --color-border: #d6dbd4;
+  --color-border-soft: #e7eae4;
+
+  --color-primary: #17624f;
+  --color-primary-hover: #114d3e;
+  --color-primary-soft: #e3f0ea;
+  --color-primary-foreground: #ffffff;
+
+  --color-danger: #b42318;
+  --color-danger-soft: #fdecea;
+  --color-warning: #8a5300;
+  --color-warning-soft: #fdf1dc;
+  --color-info: #2b5a86;
+  --color-info-soft: #e6eef6;
+}
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+  body {
+    background: var(--color-bg);
+    color: var(--color-text);
+    font-family: var(--font-sans);
+  }
+  /* Tailwind v4 gives buttons the plain arrow; controls should look pressable. */
+  button:not(:disabled),
+  [role="button"],
+  summary,
+  label[for] {
+    cursor: pointer;
+  }
+  ::placeholder {
+    color: var(--color-placeholder);
+    font-weight: 400;
+    opacity: 1;
+  }
+  :focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+  }
+}
+
+@layer components {
+  .field {
+    width: 100%;
+    min-height: 2.5rem;
+    border-radius: 0.5rem;
+    border: 1px solid var(--color-border);
+    background: var(--color-surface);
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--color-text);
+  }
+  .field:focus {
+    outline: 2px solid var(--color-primary);
+    outline-offset: -1px;
+    border-color: var(--color-primary);
+  }
+  .field:disabled {
+    background: var(--color-surface-2);
+    color: var(--color-muted);
+  }
+  .field[aria-invalid="true"] {
+    border-color: var(--color-danger);
+  }
+
+  .label {
+    display: block;
+    margin-bottom: 0.25rem;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--color-text);
+  }
+  .hint {
+    margin-top: 0.25rem;
+    font-size: 0.75rem;
+    color: var(--color-muted);
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    min-height: 2.5rem;
+    border-radius: 0.5rem;
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    white-space: nowrap;
+    transition: background-color 120ms ease-out, border-color 120ms ease-out, transform 80ms ease-out;
+  }
+  .btn:active:not(:disabled) {
+    transform: translateY(1px);
+  }
+  .btn:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+  }
+  .btn-primary {
+    background: var(--color-primary);
+    color: var(--color-primary-foreground);
+  }
+  .btn-primary:hover:not(:disabled) {
+    background: var(--color-primary-hover);
+  }
+  .btn-secondary {
+    background: var(--color-surface);
+    color: var(--color-text);
+    border: 1px solid var(--color-border);
+  }
+  .btn-secondary:hover:not(:disabled) {
+    background: var(--color-surface-2);
+  }
+  .btn-danger {
+    background: var(--color-danger);
+    color: #fff;
+  }
+  .btn-danger:hover:not(:disabled) {
+    background: #93190f;
+  }
+  .btn-ghost {
+    color: var(--color-text);
+  }
+  .btn-ghost:hover:not(:disabled) {
+    background: var(--color-surface-2);
+  }
+  .btn-sm {
+    min-height: 2rem;
+    padding: 0.25rem 0.625rem;
+    font-size: 0.8125rem;
+  }
+
+  .card {
+    border-radius: 0.75rem;
+    border: 1px solid var(--color-border);
+    background: var(--color-surface);
+  }
+
+  /* Tables: wrapper keeps min-w-0 and relative (see TableSkeleton). */
+  .table-wrap {
+    position: relative;
+    min-width: 0;
+    overflow-x: auto;
+    border-radius: 0.75rem;
+    border: 1px solid var(--color-border);
+    background: var(--color-surface);
+  }
+  .table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.875rem;
+  }
+  .table th {
+    padding: 0.625rem 0.75rem;
+    text-align: left;
+    font-weight: 500;
+    color: var(--color-muted);
+    border-bottom: 1px solid var(--color-border);
+    white-space: nowrap;
+  }
+  .table td {
+    padding: 0.625rem 0.75rem;
+    border-bottom: 1px solid var(--color-border-soft);
+    vertical-align: top;
+  }
+  .table tbody tr:last-child td {
+    border-bottom: 0;
+  }
+  .table tbody tr:hover {
+    background: color-mix(in oklab, var(--color-surface-2) 55%, transparent);
+  }
+  .num {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    border-radius: 9999px;
+    padding: 0.125rem 0.5rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  .kbd {
+    display: inline-block;
+    border: 1px solid var(--color-border);
+    border-bottom-width: 2px;
+    border-radius: 0.25rem;
+    padding: 0 0.3rem;
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    color: var(--color-muted);
+    background: var(--color-surface);
+  }
+}
+
+/* Navigation progress bar (PMC). */
+.nav-progress {
+  width: 0;
+  opacity: 0;
+  border-radius: 0 9999px 9999px 0;
+  background: var(--color-primary);
+}
+.nav-progress[data-phase="loading"] {
+  width: 85%;
+  opacity: 1;
+  transition:
+    width 9s cubic-bezier(0.05, 0.75, 0.15, 1),
+    opacity 150ms ease-out;
+}
+.nav-progress[data-phase="done"] {
+  width: 100%;
+  opacity: 0;
+  transition:
+    width 180ms ease-out,
+    opacity 280ms ease-out 160ms;
+}
+
+dialog::backdrop {
+  background: rgb(10 20 16 / 0.45);
+}
+
+/* Receipt printing: 80mm thermal roll. */
+@media print {
+  @page {
+    size: 80mm auto;
+    margin: 0;
+  }
+  body {
+    background: #fff;
+  }
+  .no-print {
+    display: none !important;
+  }
+}
