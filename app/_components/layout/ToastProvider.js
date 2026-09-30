@@ -58,17 +58,26 @@ export function useToast() {
 
 // useActionState plus a toast on success, and an onSuccess hook (close a
 // dialog, reset a form). Failure stays inline where it happened.
+//
+// The toast is raised inside the action call, not in an effect: a successful
+// action often removes its own form (closing a shift removes the close-shift
+// form), and an effect in an unmounted form never runs.
 export function useActionForm(action, { onSuccess, initial = null } = {}) {
   const toast = useToast();
-  const [state, formAction, pending] = useActionState(action, initial);
-  const seen = useRef(null);
+  const onSuccessRef = useRef(onSuccess);
   useEffect(() => {
-    if (!state || seen.current === state) return;
-    seen.current = state;
-    if (state.ok) {
-      toast(state);
-      onSuccess?.(state);
-    }
-  }, [state, toast, onSuccess]);
-  return [state, formAction, pending];
+    onSuccessRef.current = onSuccess;
+  });
+  const wrapped = useCallback(
+    async (prev, formData) => {
+      const result = await action(prev, formData);
+      if (result?.ok) {
+        toast(result);
+        onSuccessRef.current?.(result);
+      }
+      return result;
+    },
+    [action, toast]
+  );
+  return useActionState(wrapped, initial);
 }

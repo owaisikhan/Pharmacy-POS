@@ -2,7 +2,7 @@ import { Skeleton } from "@/app/_components/ui/Skeleton";
 
 export default function Loading() {
   return (
-    <div className="grid grid-cols-1 gap-4 p-4 xl:grid-cols-[minmax(0,1fr)_24rem] sm:p-6">
+    <div className="grid grid-cols-1 gap-4 p-4 xl:grid-cols-[minmax(0,1fr)_21rem] sm:p-6">
       <div className="flex flex-col gap-3">
         <Skeleton className="h-12 w-full rounded-lg" />
         <Skeleton className="h-80 w-full rounded-xl" delay={0.08} />

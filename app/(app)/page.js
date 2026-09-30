@@ -36,7 +36,7 @@ export default async function DashboardPage({ searchParams }) {
 
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
           <StatCard icon={TrendingUp} label="Net sales today" value={formatRs(s.net_sales)} note={`${formatCount(s.bills)} bills${Number(s.returns) > 0 ? `, ${formatRs(s.returns)} returned` : ""}`} />
-          <StatCard icon={Banknote} label="Cash / card / account" value={formatRs(s.cash)} note={`Cash. Card ${formatRs(s.card)}, account ${formatRs(s.credit)}`} />
+          <StatCard icon={Banknote} label="Cash sales today" value={formatRs(s.cash)} note={`Card ${formatRs(s.card)}, on account ${formatRs(s.credit)}`} />
           {isAdmin ? (
             <StatCard icon={ReceiptText} label="Profit today" value={formatRs(s.profit)} tone={Number(s.profit) < 0 ? "bad" : "good"} note={`${Number(s.profit) < 0 ? "Loss. " : ""}After cost of medicines sold, before expenses`} />
           ) : (

@@ -58,6 +58,10 @@ export default function PosScreen() {
   const [highlight, setHighlight] = useState(0);
   const [showResults, setShowResults] = useState(false);
   const searchSeq = useRef(0);
+  // What the results on screen were fetched for, and what is typed now. Refs,
+  // because the Enter handler reads them after an await.
+  const resultsFor = useRef("");
+  const queryNow = useRef("");
 
   const [cart, setCart] = useState([]);
   const [customer, setCustomer] = useState(null);
@@ -95,6 +99,10 @@ export default function PosScreen() {
   const stockProblems = lines.filter((l) => l.units > l.medicine.sellable_units);
 
   // Search ----------------------------------------------------------------
+  // Every search returns its own answer to whoever asked. Only the newest
+  // one may repaint the list. A scanner presses Enter within milliseconds of
+  // typing, so the Enter search and the typing search overlap; the Enter
+  // handler must act on its own result, never on whichever finished last.
   const runSearch = useCallback(async (q) => {
     const seq = ++searchSeq.current;
     if (!q.trim()) {
@@ -106,11 +114,13 @@ export default function PosScreen() {
     try {
       const res = await fetch(`/api/pos/medicines?q=${encodeURIComponent(q.trim())}`, { cache: "no-store" });
       const json = await res.json();
-      if (seq !== searchSeq.current) return null;
       if (!res.ok) throw new Error(json.error || "Search failed.");
-      setResults(json.results);
-      setSearchError("");
-      setHighlight(0);
+      if (seq === searchSeq.current) {
+        resultsFor.current = q.trim();
+        setResults(json.results);
+        setSearchError("");
+        setHighlight(0);
+      }
       return json.results;
     } catch (e) {
       if (seq === searchSeq.current) setSearchError(e.message);
@@ -125,7 +135,9 @@ export default function PosScreen() {
     return () => clearTimeout(t);
   }, [query, runSearch]);
 
-  const addToCart = useCallback((m, unit = "pack") => {
+  // typed: the search text this add came from. A slow add must not wipe a
+  // second scan that has already been typed into the box.
+  const addToCart = useCallback((m, unit = "pack", typed) => {
     const sellUnit = m.units_per_pack === 1 ? "pack" : unit;
     setCart((list) => {
       const i = list.findIndex((c) => c.medicine.id === m.id && c.unit === sellUnit);
@@ -136,9 +148,12 @@ export default function PosScreen() {
       }
       return [...list, { key: `${m.id}-${sellUnit}-${Date.now()}`, medicine: m, unit: sellUnit, qty: 1, discountPercent: "" }];
     });
-    setQuery("");
-    setResults([]);
-    setShowResults(false);
+    if (typed === undefined || queryNow.current === typed) {
+      queryNow.current = "";
+      setQuery("");
+      setResults([]);
+      setShowResults(false);
+    }
     setError("");
     searchRef.current?.focus();
   }, []);
@@ -155,12 +170,16 @@ export default function PosScreen() {
       setShowResults(false);
     } else if (e.key === "Enter") {
       e.preventDefault();
-      // A scanner is faster than the debounce: search now, then add.
-      const list = (await runSearch(query)) ?? results;
+      // Use the list on screen when it is for exactly what is typed; a scanner
+      // is faster than the debounce, so otherwise search now, then add.
+      const typed = query;
+      const unit = e.shiftKey ? "unit" : "pack";
+      const onScreen = resultsFor.current === typed.trim() && results.length > 0;
+      const list = onScreen ? results : await runSearch(typed);
       const exact = list.find((r) => r.barcodeHit);
-      const pick = exact || list[highlight];
-      if (pick) addToCart(pick, e.shiftKey ? "unit" : "pack");
-      else if (query.trim()) setSearchError(`Nothing matches "${query.trim()}".`);
+      const pick = exact || list[onScreen ? highlight : 0];
+      if (pick) addToCart(pick, unit, typed);
+      else if (typed.trim() && queryNow.current === typed) setSearchError(`Nothing matches "${typed.trim()}".`);
     }
   }
 
@@ -257,7 +276,7 @@ export default function PosScreen() {
 
   // Render ----------------------------------------------------------------
   return (
-    <div className="grid min-h-[calc(100dvh-7rem)] grid-cols-1 gap-4 p-4 xl:grid-cols-[minmax(0,1fr)_24rem] sm:p-6">
+    <div className="grid min-h-[calc(100dvh-7rem)] grid-cols-1 gap-4 p-4 xl:grid-cols-[minmax(0,1fr)_21rem] sm:p-6">
       {/* Left: search and cart */}
       <section aria-label="Bill" className="flex min-w-0 flex-col gap-3">
         <div className="relative">
@@ -272,6 +291,7 @@ export default function PosScreen() {
             placeholder="Scan a barcode or type a medicine, generic or company"
             value={query}
             onChange={(e) => {
+              queryNow.current = e.target.value;
               setQuery(e.target.value);
               setShowResults(true);
               setSearchError("");
@@ -344,7 +364,7 @@ export default function PosScreen() {
         </div>
 
         <div className="table-wrap flex-1">
-          <table className="table min-w-[46rem]">
+          <table className="table min-w-[42rem]">
             <caption className="sr-only">Medicines on this bill</caption>
             <thead>
               <tr>

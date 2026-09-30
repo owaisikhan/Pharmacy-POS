@@ -111,11 +111,11 @@ export default function PurchaseForm({ suppliers, medicines }) {
       </datalist>
 
       <div className="table-wrap">
-        <table className="table min-w-[64rem]">
+        <table className="table min-w-[72rem]">
           <caption className="sr-only">Invoice lines</caption>
           <thead>
             <tr>
-              <th scope="col" className="w-[26%]">Medicine</th>
+              <th scope="col">Medicine</th>
               <th scope="col">Batch no.</th>
               <th scope="col">Expiry (month)</th>
               <th scope="col" className="text-right">Packs</th>
@@ -134,7 +134,7 @@ export default function PurchaseForm({ suppliers, medicines }) {
               return (
                 <tr key={l.key}>
                   <td>
-                    <input aria-label={`Line ${i + 1} medicine`} list="medicine-options" className="field" value={l.search} onChange={(e) => pickMedicine(l.key, e.target.value)} placeholder="Type to choose" aria-invalid={l.search && !m ? true : undefined} />
+                    <input aria-label={`Line ${i + 1} medicine`} list="medicine-options" className="field min-w-[16rem]" value={l.search} onChange={(e) => pickMedicine(l.key, e.target.value)} placeholder="Type to choose" aria-invalid={l.search && !m ? true : undefined} />
                     {m ? <p className="hint">{m.units_per_pack > 1 ? `${m.units_per_pack} per pack` : "Sold each"}</p> : l.search ? <p className="hint text-[var(--color-danger)]">Choose from the list</p> : null}
                   </td>
                   <td><input aria-label={`Line ${i + 1} batch number`} className="field w-28 font-mono uppercase" value={l.batchNo} onChange={(e) => update(l.key, { batchNo: e.target.value })} required /></td>

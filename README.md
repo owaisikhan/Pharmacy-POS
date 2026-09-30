@@ -62,4 +62,8 @@ and Supabase, deployed on Vercel.
   migrations and runs the money and stock scenarios (sales, FEFO, returns,
   credit limits, shifts, RLS). Needs Postgres 16 locally:
   `PGHOST=... PGPORT=... PGUSER=postgres npm run test:db`.
+- `scripts/dev/e2e.mjs` drives a whole pharmacy day in Chromium (sign-in,
+  purchase, sales, receipt, return, payment, write-off, shift close, staff
+  limits). It **writes to the connected database**: only run it against a
+  database you will wipe, with test accounts made for it.
 - Project rules are in `CLAUDE.md`; design rules in `docs/UI_CONVENTIONS.md`.
